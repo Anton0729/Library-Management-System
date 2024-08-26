@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -7,6 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 
 from .models import Book
 from .serializer import BookSerializer
+from .filters import BookFilter
 
 PAGE_SIZE = 10
 MAX_PAGE_SIZE = 1000
@@ -24,6 +26,8 @@ class Books(APIView):
     API for managing Books
     """
     pagination_class = BookListPagination
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = BookFilter
 
     def get(self, request, pk=None):
         """
@@ -46,16 +50,23 @@ class Books(APIView):
 
         else:
             books = Book.objects.all()
-            paginator = self.pagination_class()
 
-            # Paginate the queryset of books
-            result_page = paginator.paginate_queryset(books, request)
+            # Apply filtering
+            filterset = self.filter_class(data=request.GET, queryset=books)
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+            filtered_books = filterset.qs
+
+            # Pagination
+            paginator = self.pagination_class()
+            result_page = paginator.paginate_queryset(filtered_books, request)
             book_serializer = BookSerializer(result_page, many=True)
-            return Response(book_serializer.data, status=status.HTTP_200_OK)
+            return paginator.get_paginated_response(book_serializer.data)
+
 
     def post(self, request):
 
-        serializer = BookSerializer(request.data)
+        serializer = BookSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -76,7 +87,7 @@ class Books(APIView):
         except ObjectDoesNotExist:
             return Response({"error": f"Book with id {pk} not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = BookSerializer(book, data=request.data)
+        serializer = BookSerializer(book, data=request.data, partial=True)  # partial=True to allow partial updates.
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
