@@ -83,7 +83,7 @@ DATABASES = {
         'NAME': 'library_system',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
