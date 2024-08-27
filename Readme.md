@@ -2,6 +2,8 @@
 
 This project is a RESTful API for managing a library of books, allowing users to add, edit, delete, and view books. The API also provides filtering, pagination, and CRUD operations.
 
+API Documentation https://docs.google.com/document/d/1fIQlz30dfluCuL11K2QrJP2jhVW6gja4/edit?usp=sharing&ouid=110472722426617783568&rtpof=true&sd=true
+
 ## Features
 
 - **CRUD Operations**:
