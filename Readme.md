@@ -32,6 +32,7 @@ First, clone the repository to your local machine:
 
 ```bash
 https://github.com/Anton0729/Library-Management-System.git
+cd .\Library-Management-System\
 ```
 
 ### 2. Run Docker Desktop
@@ -43,17 +44,26 @@ docker-compose build
 
 ### 4. Run the container
 ```bash
-docker-compose up
+docker-compose up -d
 ```
 
-here
+### 5. Apply migrations
+To apply the database migrations, run:
+```bash
+docker-compose run --rm web sh -c "python manage.py migrate"
+```
 
-### 5. Access the Application
+### 6. Create a superuser (optional, for Django admin):
+```bash
+docker-compose run --rm web sh -c "python manage.py createsuperuser"
+```
+
+### 7. Access the Application
 
 - Application: http://localhost:8000
 
 
-### 6. Delete the container
+### 8. Delete the container
 ```bash
 docker-compose down
 ```
