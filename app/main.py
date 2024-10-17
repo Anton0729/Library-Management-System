@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi_pagination import add_pagination
 
@@ -9,10 +11,10 @@ from sqlalchemy.future import select
 from typing import Optional, List
 
 from app.dependencies import get_db
-from app.models import User, Book, Genre, Author, Publisher
+from app.models import Book, Genre, Author, Publisher, BorrowingHistory
 from app.models import User as UserModel
 from app.schemas import BookCreate, BookResponse, BookResponsePagination, AuthorCreate, AuthorResponse, PublisherCreate, \
-    PublisherResponse, GenreResponse, GenreCreate
+    PublisherResponse, GenreResponse, GenreCreate, BorrowingHistoryCreate, BorrowingHistoryResponse
 from auth.dependencies import get_current_user
 from auth.routes import router as auth_router
 
@@ -23,8 +25,8 @@ app = FastAPI(
 # Include authentication routes from the auth module
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
+MAX_BORROW_LIMIT = 5
 
-# def get_user_or_404()
 
 @app.get("/authors/{id}/books", response_model=List[BookResponse], status_code=200)
 def get_author_books(
@@ -64,6 +66,18 @@ def create_author(
 
     return new_author
 
+@app.get("/books/{id}/history", status_code=200)
+def get_borrowing_history(
+        id: int,
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    # Check if book exists
+    book_history = session.query(Book).filter(Book.id == id).first()
+    if not book_history:
+        raise HTTPException(status_code=404, detail="Book not found.")
+
+    pass
 
 @app.get("/books/", response_model=BookResponsePagination, status_code=200)
 def get_books(
@@ -210,7 +224,6 @@ def create_publisher(
         session.rollback()  # Roll back the session in case of error
         raise HTTPException(status_code=500, detail="An unexpected error occurred: {}".format(str(e)))
 
-
     return new_publisher
 
 
@@ -247,6 +260,53 @@ def create_genre(
 
     return new_genre
 
+
+@app.post("/borrow/", response_model=BorrowingHistoryResponse, status_code=201)
+def borrow_book(
+        borrow_data: BorrowingHistoryCreate,
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    # Check if the book exists and is available
+    book = session.query(Book).filter(Book.id == borrow_data.book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found.")
+    if not book.available:
+        raise HTTPException(status_code=400, detail="Book not available for borrowing.")
+
+    # Check if the user has already borrowed the max allowed books
+    borrowed_books_count = session.query(BorrowingHistory).filter(
+        BorrowingHistory.user_id == current_user.id,
+        BorrowingHistory.return_date == None
+    ).count()
+
+    if borrowed_books_count >= MAX_BORROW_LIMIT:
+        raise HTTPException(status_code=400, detail=f"You cannot borrow more than {MAX_BORROW_LIMIT} books.")
+
+    already_borrowed = session.query(BorrowingHistory).filter(
+        BorrowingHistory.user_id == current_user.id,
+        BorrowingHistory.book_id == borrow_data.book_id,
+        BorrowingHistory.return_date == None
+    )
+
+    if already_borrowed:
+        raise HTTPException(status_code=400, detail=f"You have already borrowed book {borrow_data.book_id}")
+
+    new_borrow = BorrowingHistory(
+        book_id=borrow_data.book_id,
+        user_id=current_user.id,
+        borrow_date=datetime.date.today(),
+    )
+
+    try:
+        session.add(new_borrow)
+        session.commit()
+        session.refresh(new_borrow)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error occurred while borrowing the book: {str(e)}")
+
+    return new_borrow
 
 
 if __name__ == "__main__":

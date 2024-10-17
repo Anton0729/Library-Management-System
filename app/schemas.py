@@ -121,3 +121,20 @@ class GenreResponse(GenreCreate):
 
     class Config:
         orm_mode = True
+
+
+class BorrowingHistoryCreate(BaseModel):
+    book_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class BorrowingHistoryResponse(BorrowingHistoryCreate):
+    id: int
+    user_id: int
+    borrow_date: date
+    return_date: date
+
+    class Config:
+        orm_mode = True
