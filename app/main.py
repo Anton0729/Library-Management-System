@@ -9,9 +9,10 @@ from sqlalchemy.future import select
 from typing import Optional, List
 
 from app.dependencies import get_db
-from app.models import User, Book, Genre, Author
+from app.models import User, Book, Genre, Author, Publisher
 from app.models import User as UserModel
-from app.schemas import BookCreate, BookResponse, BookResponsePagination, AuthorCreate, AuthorResponse
+from app.schemas import BookCreate, BookResponse, BookResponsePagination, AuthorCreate, AuthorResponse, PublisherCreate, \
+    PublisherResponse, GenreResponse, GenreCreate
 from auth.dependencies import get_current_user
 from auth.routes import router as auth_router
 
@@ -158,6 +159,94 @@ def create_book(
         raise HTTPException(status_code=500, detail="An unexpected error occurred: {}".format(str(e)))
 
     return new_book
+
+
+@app.get("/publishers/", response_model=List[PublisherResponse], status_code=200)
+def get_publishers(
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    publishers = session.query(Publisher).all()
+
+    if not publishers:
+        raise HTTPException(status_code=404, detail="No publishers found.")
+
+    return publishers
+
+
+@app.post("/publishers/", response_model=PublisherResponse, status_code=201)
+def create_publisher(
+        publisher_data: PublisherCreate,
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    publisher = session.query(Publisher).filter(Publisher.name == publisher_data.name.lower()).first()
+
+    if publisher:
+        raise HTTPException(status_code=400, detail=f"Publisher '{publisher_data.name}' already exists.")
+
+    new_publisher = Publisher(
+        name=publisher_data.name.lower(),
+        established_year=publisher_data.established_year,
+    )
+    try:
+        session.add(new_publisher)
+        session.commit()
+        session.refresh(new_publisher)
+    except IntegrityError as e:
+        session.rollback()  # Roll back the session in case of error
+        raise HTTPException(status_code=400, detail="Integrity error: {}".format(str(e.orig)))
+    except DataError as e:
+        session.rollback()  # Roll back the session in case of error
+        raise HTTPException(status_code=400, detail="Data error: {}".format(str(e.orig)))
+    except UniqueViolation as e:
+        session.rollback()  # Roll back the session in case of error
+        raise HTTPException(status_code=400, detail="Unique error: {}".format(str(e.orig)))
+    except ValueError as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="Value error: {}".format(str(e.orig)))
+
+    except Exception as e:
+        session.rollback()  # Roll back the session in case of error
+        raise HTTPException(status_code=500, detail="An unexpected error occurred: {}".format(str(e)))
+
+
+    return new_publisher
+
+
+@app.get("/genres/", response_model=List[GenreResponse], status_code=200)
+def get_genres(
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    genres = session.query(Genre).all()
+
+    if not genres:
+        raise HTTPException(status_code=404, detail="No genres found.")
+
+    return genres
+
+
+@app.post("/genres/", response_model=GenreResponse, status_code=201)
+def create_genre(
+        genre_data: GenreCreate,
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    genres = session.query(Genre).filter(Genre.name == genre_data.name.lower()).first()
+
+    if genres:
+        raise HTTPException(status_code=400, detail=f"Genre '{genre_data.name}' already exists.")
+
+    new_genre = Genre(
+        name=genre_data.name.lower()
+    )
+    session.add(new_genre)
+    session.commit()
+    session.refresh(new_genre)
+
+    return new_genre
+
 
 
 if __name__ == "__main__":

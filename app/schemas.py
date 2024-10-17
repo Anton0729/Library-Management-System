@@ -86,3 +86,38 @@ class AuthorResponse(AuthorCreate):
 
     class Config:
         orm_mode = True
+
+
+class PublisherCreate(BaseModel):
+    name: str
+    established_year: int
+
+    @validator("established_year")
+    def validate_established_year(cls, v):
+        if v >= date.today().year:
+            raise ValueError("Established year must be in past.")
+        return v
+
+    class Config:
+        orm_mode = True
+
+
+class PublisherResponse(PublisherCreate):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class GenreCreate(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class GenreResponse(GenreCreate):
+    id: int
+
+    class Config:
+        orm_mode = True
