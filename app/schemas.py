@@ -1,3 +1,4 @@
+import datetime
 import re
 from typing_extensions import Self
 
@@ -136,6 +137,25 @@ class BorrowingHistoryResponse(BaseModel):
     book: BookResponse
     borrow_date: date
     return_date: Optional[date] = None
+
+    class Config:
+        orm_mode = True
+
+
+class ReturnRequestCreate(BaseModel):
+    book_id: int
+    return_date: date = date.today()
+
+    class Config:
+        orm_mode = True
+
+
+class ReturnRequestResponse(BaseModel):
+    id: int
+    book_id: int
+    user_id: int
+    borrow_date: date
+    return_date: date
 
     class Config:
         orm_mode = True

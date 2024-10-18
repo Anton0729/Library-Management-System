@@ -14,7 +14,8 @@ from app.dependencies import get_db
 from app.models import Book, Genre, Author, Publisher, BorrowingHistory
 from app.models import User as UserModel
 from app.schemas import BookCreate, BookResponse, BookResponsePagination, AuthorCreate, AuthorResponse, PublisherCreate, \
-    PublisherResponse, GenreResponse, GenreCreate, BorrowingHistoryCreate, BorrowingHistoryResponse
+    PublisherResponse, GenreResponse, GenreCreate, BorrowingHistoryCreate, BorrowingHistoryResponse, \
+    ReturnRequestCreate, ReturnRequestResponse
 from auth.dependencies import get_current_user
 from auth.routes import router as auth_router
 
@@ -293,7 +294,7 @@ def borrow_book(
         BorrowingHistory.return_date == None
     )
 
-    if already_borrowed:
+    if not already_borrowed:
         raise HTTPException(status_code=400, detail=f"You have already borrowed book {borrow_data.book_id}")
 
     new_borrow = BorrowingHistory(
@@ -311,6 +312,34 @@ def borrow_book(
         raise HTTPException(status_code=500, detail=f"Error occurred while borrowing the book: {str(e)}")
 
     return new_borrow
+
+
+@app.post("/return/", response_model=ReturnRequestResponse, status_code=201)
+def return_book(
+        return_data: ReturnRequestCreate,
+        session: Session = Depends(get_db),
+        current_user: UserModel = Depends(get_current_user),
+):
+    borrowing_record = session.query(BorrowingHistory).filter(
+        BorrowingHistory.book_id == return_data.book_id,
+        BorrowingHistory.user_id == current_user.id,
+        BorrowingHistory.return_date == None
+    ).first()
+
+    if not borrowing_record:
+        raise HTTPException(status_code=400, detail="No active borrowed books found.")
+
+    borrowing_record.return_date = return_data.return_date
+
+    session.commit()
+
+    return ReturnRequestResponse(
+        id=borrowing_record.id,
+        book_id=borrowing_record.book_id,
+        user_id=borrowing_record.user_id,
+        borrow_date=borrowing_record.borrow_date,
+        return_date=borrowing_record.return_date,
+    )
 
 
 if __name__ == "__main__":
