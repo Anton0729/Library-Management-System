@@ -1,10 +1,7 @@
-import datetime
 import re
-from typing_extensions import Self
-
-from app.models import User, Author, Book, Genre
-from typing import Optional, Any, List
 from datetime import date
+from typing import Optional, List
+
 from pydantic import BaseModel, validator
 
 
@@ -37,9 +34,10 @@ class BookCreate(BaseModel):
     def validate_isbn(cls, v):
         # ISBN-10 or ISBN-13 regex pattern
         isbn_pattern = re.compile(
-            r"^(97(8|9)?[\s-]?)?\d{1,5}[\s-]?\d{1,7}[\s-]?\d{1,6}[\s-]?\d{1}$|^(97(8|9)?[\s-]?)?\d{9}(\d|X)$")
+            r"^(97(8|9)?[\s-]?)?\d{1,5}[\s-]?\d{1,7}[\s-]?\d{1,6}[\s-]?\d{1}$|^(97(8|9)?[\s-]?)?\d{9}(\d|X)$"
+        )
         if not isbn_pattern.match(v):
-            raise ValueError('Invalid ISBN format. Must be ISBN-10 or ISBN-13.')
+            raise ValueError("Invalid ISBN format. Must be ISBN-10 or ISBN-13.")
         return v
 
     @validator("publish_date")

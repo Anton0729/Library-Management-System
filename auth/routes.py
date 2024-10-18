@@ -13,7 +13,7 @@ router = APIRouter()
 # Login endpoint for access token
 @router.post("/token", response_model=Token)
 def login_for_access_token(
-        form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
+    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
     """
     Endpoint to authenticate a user and return an access token.
@@ -40,10 +40,7 @@ def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already registered")
 
     hashed_password = get_password_hash(user.password)
-    db_user = User(
-        username=user.username,
-        hashed_password=hashed_password
-    )
+    db_user = User(username=user.username, hashed_password=hashed_password)
 
     db.add(db_user)
     db.commit()

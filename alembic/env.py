@@ -13,7 +13,7 @@ url_tokens = {
     "DB_USER": os.getenv("DB_USER", ""),
     "DB_PASS": os.getenv("DB_PASSWORD", ""),
     "DB_HOST": os.getenv("DB_HOST", ""),
-    "DB_NAME": os.getenv("DB_NAME", "")
+    "DB_NAME": os.getenv("DB_NAME", ""),
 }
 
 # this is the Alembic Config object, which provides
@@ -75,9 +75,7 @@ def run_migrations_online() -> None:
     connectable = create_engine(url)
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

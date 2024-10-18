@@ -7,9 +7,7 @@ from app.routers.borrow_return import router as borrow_return_router
 from app.routers.genres import router as genre_router
 from app.routers.publishers import router as publisher_router
 
-app = FastAPI(
-    title="Library Management System"
-)
+app = FastAPI(title="Library Management System")
 
 # Register the routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])

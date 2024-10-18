@@ -1,10 +1,10 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, DataError
 from psycopg2.errors import UniqueViolation
-
-from typing import List
 
 from app.dependencies import get_db
 from app.models import Publisher
@@ -34,10 +34,16 @@ def create_publisher(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
-    publisher = session.query(Publisher).filter(Publisher.name == publisher_data.name.lower()).first()
+    publisher = (
+        session.query(Publisher)
+        .filter(Publisher.name == publisher_data.name.lower())
+        .first()
+    )
 
     if publisher:
-        raise HTTPException(status_code=400, detail=f"Publisher '{publisher_data.name}' already exists.")
+        raise HTTPException(
+            status_code=400, detail=f"Publisher '{publisher_data.name}' already exists."
+        )
 
     new_publisher = Publisher(
         name=publisher_data.name.lower(),
@@ -49,19 +55,29 @@ def create_publisher(
         session.refresh(new_publisher)
     except IntegrityError as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Integrity error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Integrity error: {str(e.orig)}"
+        ) from e
     except DataError as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Data error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Data error: {str(e.orig)}"
+        )
     except UniqueViolation as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Unique error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Unique error: {str(e.orig)}"
+        ) from e
     except ValueError as e:
         session.rollback()
-        raise HTTPException(status_code=400, detail="Value error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Value error: {str(e)}"
+        ) from e
 
     except Exception as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=500, detail="An unexpected error occurred: {}".format(str(e)))
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        ) from e
 
     return new_publisher

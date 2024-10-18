@@ -1,16 +1,20 @@
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, DataError
-from psycopg2.errors import UniqueViolation
 from sqlalchemy.future import select
-
-from typing import Optional, List
+from psycopg2.errors import UniqueViolation
 
 from app.dependencies import get_db
 from app.models import Book, Genre, Author, BorrowingHistory
 from app.models import User as UserModel
-from app.schemas import BookCreate, BookResponse, BookResponsePagination, BorrowingHistoryResponse
+from app.schemas import (
+    BookCreate,
+    BookResponse,
+    BookResponsePagination,
+    BorrowingHistoryResponse,
+)
 
 from auth.dependencies import get_current_user
 
@@ -29,7 +33,9 @@ def get_borrowing_history(
         raise HTTPException(status_code=404, detail="Book not found.")
 
     # Get all history of book
-    book_history = session.query(BorrowingHistory).filter(BorrowingHistory.book_id == id).all()
+    book_history = (
+        session.query(BorrowingHistory).filter(BorrowingHistory.book_id == id).all()
+    )
     return book_history
 
 
@@ -39,7 +45,7 @@ def get_books(
         current_user: UserModel = Depends(get_current_user),
         page: int = Query(1, ge=1),  # Page number, default is 1
         size: int = Query(10, ge=1, le=100),  # Page size, default is 10, max 100
-        sort_by: Optional[str] = Query(None, enum=["title", "author", "publish_date"])
+        sort_by: Optional[str] = Query(None, enum=["title", "author", "publish_date"]),
 ):
     """
     Retrieve a paginated list of books with optional sorting by title, author, or publish_date
@@ -115,15 +121,23 @@ def create_book(
         session.refresh(new_book)
     except IntegrityError as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Integrity error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Integrity error: {str(e)}"
+        ) from e
     except DataError as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Data error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Data error: {str(e)}"
+        ) from e
     except UniqueViolation as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=400, detail="Unique error: {}".format(str(e.orig)))
+        raise HTTPException(
+            status_code=400, detail=f"Unique error: {str(e)}"
+        ) from e
     except Exception as e:
         session.rollback()  # Roll back the session in case of error
-        raise HTTPException(status_code=500, detail="An unexpected error occurred: {}".format(str(e)))
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        ) from e
 
     return new_book

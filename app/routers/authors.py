@@ -1,8 +1,7 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
-
-from typing import List
 
 from app.dependencies import get_db
 from app.models import Book, Author
@@ -38,7 +37,9 @@ def create_author(
     # Check that author's name is not already exists
     existing_author = session.query(Author).filter(Author.name == author.name).first()
     if existing_author:
-        raise HTTPException(status_code=400, detail=f"Author {author.name} already exists.")
+        raise HTTPException(
+            status_code=400, detail=f"Author {author.name} already exists."
+        )
 
     new_author = Author(
         name=author.name,

@@ -1,8 +1,7 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
-
-from typing import List
 
 from app.dependencies import get_db
 from app.models import Genre
@@ -35,11 +34,11 @@ def create_genre(
     genres = session.query(Genre).filter(Genre.name == genre_data.name.lower()).first()
 
     if genres:
-        raise HTTPException(status_code=400, detail=f"Genre '{genre_data.name}' already exists.")
+        raise HTTPException(
+            status_code=400, detail=f"Genre '{genre_data.name}' already exists."
+        )
 
-    new_genre = Genre(
-        name=genre_data.name.lower()
-    )
+    new_genre = Genre(name=genre_data.name.lower())
     session.add(new_genre)
     session.commit()
     session.refresh(new_genre)
