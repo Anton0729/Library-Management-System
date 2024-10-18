@@ -130,11 +130,12 @@ class BorrowingHistoryCreate(BaseModel):
         orm_mode = True
 
 
-class BorrowingHistoryResponse(BorrowingHistoryCreate):
+class BorrowingHistoryResponse(BaseModel):
     id: int
-    user_id: int
+    user: UserResponse
+    book: BookResponse
     borrow_date: date
-    return_date: date
+    return_date: Optional[date] = None
 
     class Config:
         orm_mode = True

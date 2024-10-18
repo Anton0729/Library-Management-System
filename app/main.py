@@ -66,7 +66,8 @@ def create_author(
 
     return new_author
 
-@app.get("/books/{id}/history", status_code=200)
+
+@app.get("/books/{id}/history", response_model=List[BorrowingHistoryResponse], status_code=200)
 def get_borrowing_history(
         id: int,
         session: Session = Depends(get_db),
@@ -77,7 +78,10 @@ def get_borrowing_history(
     if not book_history:
         raise HTTPException(status_code=404, detail="Book not found.")
 
-    pass
+    # Get all history of book
+    book_history = session.query(BorrowingHistory).filter(BorrowingHistory.book_id == id).all()
+    return book_history
+
 
 @app.get("/books/", response_model=BookResponsePagination, status_code=200)
 def get_books(
