@@ -17,6 +17,13 @@ def get_genres(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Retrieve all genres in the library.
+
+    Returns
+    -------
+    - **return**: A list of all genres in the library.
+    """
     genres = session.query(Genre).all()
 
     if not genres:
@@ -31,6 +38,26 @@ def create_genre(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Add new genre to the library.
+
+    Request Body
+    ------------
+    - **name** (string): The name of the genre. Must be unique
+
+    Example Request Body
+    --------------------
+
+    ```json
+    {
+      "name": "Science Fiction"
+    }
+    ```
+
+    Returns
+    -------
+    - **return**: The created genre's details.
+    """
     genres = session.query(Genre).filter(Genre.name == genre_data.name.lower()).first()
 
     if genres:

@@ -26,6 +26,25 @@ def borrow_book(
     session: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Borrow a book from the library.
+
+    Request Body
+    ------------
+    - **book_id** (integer): The ID of the book to be borrowed.
+
+    Example Request Body
+    --------------------
+    ```json
+    {
+      "book_id": 1
+    }
+    ```
+
+    Returns
+    -------
+    - **return**: A detailed record of the borrowing event.
+    """
     # Check if the book exists and is available
     book = session.query(Book).filter(Book.id == borrow_data.book_id).first()
     if not book:
@@ -86,6 +105,27 @@ def return_book(
     session: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Return a borrowed book to the library.
+
+    Request Body
+    ------------
+    - **book_id** (integer): The ID of the book being returned.
+    - **return_date** (date): The date the book is being returned.
+
+    Example Request Body
+    --------------------
+    ```json
+    {
+      "book_id": 1,
+      "return_date": "2024-10-10"
+    }
+    ```
+
+    Returns
+    -------
+    - **return**: A detailed record of the return event, including book ID, user ID, borrow date, and return date.
+    """
     borrowing_record = (
         session.query(BorrowingHistory)
         .filter(

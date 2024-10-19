@@ -27,6 +27,17 @@ def get_borrowing_history(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Retrieve the borrowing history of a specific book by ID.
+
+    Parameters
+    ----------
+    - **id**: The id of the book whose history needs to be retrieved
+
+    Returns
+    -------
+    - **return**: A list of borrowing records, including borrower details and borrow/return_dates
+    """
     # Check if book exists
     book_history = session.query(Book).filter(Book.id == id).first()
     if not book_history:
@@ -50,9 +61,15 @@ def get_books(
     """
     Retrieve a paginated list of books with optional sorting by title, author, or publish_date
 
+    Parameters
+    ----------
     - **page**: Page number to retrieve (default is 1).
     - **size**: Number of tasks per page (default is 10, max 100).
     - **sort_by**: Field to sort by (title, author, or publish_date).
+
+    Returns
+    -------
+    - **return**: A list of books with pagination and optional sorting.
     """
 
     offset = (page - 1) * size  # Calculate the offset for pagination
@@ -95,6 +112,38 @@ def create_book(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Add new book to the library.
+
+    Request Body
+    ------------
+
+    - **title** (string): The title of the book.
+    - **isbn** (string): The isbn of the book. ISBN format is validated.
+    - **author_id** (integer): The ID of the book's author. Author must exist in the database
+    - **genre_id** (integer): The ID of the book's genre. Genre must exist in the database
+    - **publisher_id** (integer): The ID of the book's publisher. Optional field.
+    - **publish_date** (date): The date of the book's publishment.
+    - **available** (boolean): By default True.
+
+    Example Request Body
+    --------------------
+
+    ```json
+    {
+      "title": "New book",
+      "isbn": "0-19-853453-5",
+      "author_id": 1,
+      "genre_id": 1,
+      "publisher_id": null,
+      "publish_date": "2024-10-14",
+    }
+    ```
+
+    Returns
+    -------
+    - **return**: The created book's details.
+    """
     # Check if author exists.
     author = session.query(Author).filter(Author.id == book.author_id).first()
     if not author:

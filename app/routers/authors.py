@@ -18,6 +18,17 @@ def get_author_books(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Retrieve all books written by a special author by ID.
+
+    Parameters
+    ----------
+    - **id**: The ID of the author.
+
+    Returns
+    -------
+    - **return**: A list of all books written by the author
+    """
     # Check if author exists.
     author = session.query(Author).filter(Author.id == id).first()
     if not author:
@@ -34,6 +45,29 @@ def create_author(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+        Add new author to the library.
+
+        Request Body
+        ------------
+
+        - **name** (string): The full name of the author. Must be unique.
+        - **birthday** (date): The birthday of the author. Must be valid date in past.
+
+        Example Request Body
+        --------------------
+
+        ```json
+        {
+          "name": "AuthorName AuthorSurname",
+          "birthday": "1965-07-05",
+        }
+        ```
+
+        Returns
+        -------
+        - **return**: The created author's details.
+        """
     # Check that author's name is not already exists
     existing_author = session.query(Author).filter(Author.name == author.name).first()
     if existing_author:

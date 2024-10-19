@@ -20,6 +20,13 @@ def get_publishers(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Retrieve all publishers in the library.
+
+    Returns
+    -------
+    - **return**: A list of all publishers in the library.
+    """
     publishers = session.query(Publisher).all()
 
     if not publishers:
@@ -34,6 +41,28 @@ def create_publisher(
         session: Session = Depends(get_db),
         current_user: UserModel = Depends(get_current_user),
 ):
+    """
+    Add a new publisher to the library.
+
+    Request Body
+    ------------
+    - **name** (string): The name of the publisher. Must be unique.
+    - **established_year** (integer): The year the publisher was established.
+
+    Example Request Body
+    --------------------
+
+    ```json
+    {
+      "name": "Penguin Books",
+      "established_year": 1935
+    }
+    ```
+
+    Returns
+    -------
+    - **return**: The created publisher's details.
+    """
     publisher = (
         session.query(Publisher)
         .filter(Publisher.name == publisher_data.name.lower())
