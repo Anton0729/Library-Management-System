@@ -136,7 +136,7 @@ def create_book(
       "author_id": 1,
       "genre_id": 1,
       "publisher_id": null,
-      "publish_date": "2024-10-14",
+      "publish_date": "2024-10-14"
     }
     ```
 
