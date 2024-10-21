@@ -45,41 +45,38 @@ def borrow_book(
     -------
     - **return**: A detailed record of the borrowing event.
     """
-    # Check if the book exists and is available
+    # Check if the book exists and available
     book = session.query(Book).filter(Book.id == borrow_data.book_id).first()
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found.")
-    if not book.available:
-        raise HTTPException(status_code=400, detail="Book not available for borrowing.")
+    if not book or not book.available:
+        raise HTTPException(status_code=400, detail="Book is not available for borrowing.")
 
-    # Check if the user has already borrowed the max allowed books
-    borrowed_books_count = (
+    # Check if user has already borrowed the same book and hasn't returned it yet
+    active_borrow = session.query(BorrowingHistory).filter(
+        BorrowingHistory.user_id == current_user.id,
+        BorrowingHistory.book_id == borrow_data.book_id,
+        BorrowingHistory.return_date.is_(None)
+    ).first()
+
+    if active_borrow:
+        raise HTTPException(status_code=400, detail="You have already borrowed this book and have not returned it yet.")
+
+    # Check if user has reached maximum number of borrowed books
+    borrowed_books = (
         session.query(BorrowingHistory)
         .filter(
             BorrowingHistory.user_id == current_user.id,
-            BorrowingHistory.return_date is None,
+            BorrowingHistory.return_date.is_(None),
         )
         .count()
     )
 
-    if borrowed_books_count >= MAX_BORROW_LIMIT:
+    if borrowed_books >= MAX_BORROW_LIMIT:
         raise HTTPException(
             status_code=400,
             detail=f"You cannot borrow more than {MAX_BORROW_LIMIT} books.",
         )
 
-    already_borrowed = session.query(BorrowingHistory).filter(
-        BorrowingHistory.user_id == current_user.id,
-        BorrowingHistory.book_id == borrow_data.book_id,
-        BorrowingHistory.return_date is None,
-    )
-
-    if not already_borrowed:
-        raise HTTPException(
-            status_code=400,
-            detail=f"You have already borrowed book {borrow_data.book_id}",
-        )
-
+    # Borrow book
     new_borrow = BorrowingHistory(
         book_id=borrow_data.book_id,
         user_id=current_user.id,
@@ -131,7 +128,7 @@ def return_book(
         .filter(
             BorrowingHistory.book_id == return_data.book_id,
             BorrowingHistory.user_id == current_user.id,
-            BorrowingHistory.return_date is None,
+            BorrowingHistory.return_date.is_(None),
         )
         .first()
     )

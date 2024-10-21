@@ -147,12 +147,12 @@ def create_book(
     # Check if author exists.
     author = session.query(Author).filter(Author.id == book.author_id).first()
     if not author:
-        raise HTTPException(status_code=404, detail="Author not found")
+        raise HTTPException(status_code=404, detail="Author not found.")
 
     # Check if genre exists.
     genre = session.query(Genre).filter(Genre.id == book.genre_id).first()
     if not genre:
-        raise HTTPException(status_code=404, detail="Genre not found")
+        raise HTTPException(status_code=404, detail="Genre not found.")
 
     # Create the new book record
     new_book = Book(
@@ -174,12 +174,12 @@ def create_book(
             status_code=400, detail=f"Integrity error: {str(e)}"
         ) from e
     except DataError as e:
-        session.rollback()  # Roll back the session in case of error
+        session.rollback()
         raise HTTPException(
             status_code=400, detail=f"Data error: {str(e)}"
         ) from e
     except UniqueViolation as e:
-        session.rollback()  # Roll back the session in case of error
+        session.rollback()
         raise HTTPException(
             status_code=400, detail=f"Unique error: {str(e)}"
         ) from e

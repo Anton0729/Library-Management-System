@@ -2,7 +2,7 @@ import re
 from datetime import date
 from typing import Optional, List
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
 class UserBase(BaseModel):
@@ -30,7 +30,7 @@ class BookCreate(BaseModel):
     publish_date: date
     available: bool = True
 
-    @validator("isbn")
+    @field_validator("isbn")
     def validate_isbn(cls, v):
         # ISBN-10 or ISBN-13 regex pattern
         isbn_pattern = re.compile(
@@ -40,7 +40,7 @@ class BookCreate(BaseModel):
             raise ValueError("Invalid ISBN format. Must be ISBN-10 or ISBN-13.")
         return v
 
-    @validator("publish_date")
+    @field_validator("publish_date")
     def validate_publish_date(cls, v):
         if v >= date.today():
             raise ValueError("Publish date must be in the past.")
@@ -70,7 +70,7 @@ class AuthorCreate(BaseModel):
     name: str
     birthdate: date
 
-    @validator("birthdate")
+    @field_validator("birthdate")
     def validate_birthdate(cls, v):
         if v > date.today():
             raise ValueError("Birthdate cannot be in the future.")
@@ -91,7 +91,7 @@ class PublisherCreate(BaseModel):
     name: str
     established_year: int
 
-    @validator("established_year")
+    @field_validator("established_year")
     def validate_established_year(cls, v):
         if v >= date.today().year:
             raise ValueError("Established year must be in past.")

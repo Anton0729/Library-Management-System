@@ -88,12 +88,12 @@ def create_publisher(
             status_code=400, detail=f"Integrity error: {str(e.orig)}"
         ) from e
     except DataError as e:
-        session.rollback()  # Roll back the session in case of error
+        session.rollback()
         raise HTTPException(
             status_code=400, detail=f"Data error: {str(e.orig)}"
         )
     except UniqueViolation as e:
-        session.rollback()  # Roll back the session in case of error
+        session.rollback()
         raise HTTPException(
             status_code=400, detail=f"Unique error: {str(e.orig)}"
         ) from e
@@ -104,7 +104,7 @@ def create_publisher(
         ) from e
 
     except Exception as e:
-        session.rollback()  # Roll back the session in case of error
+        session.rollback()
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         ) from e
