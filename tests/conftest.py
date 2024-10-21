@@ -7,8 +7,6 @@ from app.database import Base
 from app.dependencies import get_db
 from app.main import app
 from app.config import settings
-from app.models import User
-from auth.dependencies import get_current_user
 
 # Define the test database engine
 SQLALCHEMY_TEST_DATABASE_URL = f"postgresql+psycopg2://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.test_db_name}"
