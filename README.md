@@ -172,7 +172,7 @@ Status: 200 OK
 
 ```json
 {
-   "name": "Science Fiction"
+   "name": "Science Fiction" # Name must be unique
 }
 ```
 
@@ -218,8 +218,8 @@ Status: 200 OK
 
 ```json
 {
-   "name": "Penguin Books",
-   "established_year": 1935
+   "name": "Penguin Books", # name must be unique
+   "established_year": 1935 # year must be in past
 }
 ```
 
@@ -267,8 +267,8 @@ Status: 200 OK
 
 ```json
 {
-   "name": "AuthorName AuthorSurname",
-   "birthday": "1965-07-05"
+   "name": "AuthorName AuthorSurname", # Name must be unique
+   "birthday": "1965-07-05"  # Birthdate cannot be in future. Use date format
 }
 ```
 
@@ -297,7 +297,7 @@ Status: 200 OK
 ```json
 [
    {
-      "title": "New book",
+      "title": "New book", 
       "isbn": "0-19-853453-5",
       "author_id": 1,
       "genre_id": 1,
@@ -321,12 +321,12 @@ Status: 200 OK
 
 ```json
 {
-   "title": "New book",
-   "isbn": "0-19-853453-5",
+   "title": "New book",      # Must be unique
+   "isbn": "0-19-853453-5",  # Ensure correct format
    "author_id": 1,
    "genre_id": 1,
    "publisher_id": null,
-   "publish_date": "2024-10-14"
+   "publish_date": "2024-10-14" # Use date format
 }
 ```
 
@@ -467,7 +467,7 @@ Status: 201 Created
 ```json
 {
    "book_id": 1,
-   "return_date": "2024-10-10"
+   "return_date": "2024-10-10" # Use date format
 }
 ```
 
