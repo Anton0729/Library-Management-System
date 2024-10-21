@@ -125,7 +125,6 @@ docker-compose run --rm web sh -c "coverage run -m pytest && coverage report"
 ```
 
 **Response:**
-<br>
 Status: 201 Created
 
 ```json
