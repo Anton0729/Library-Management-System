@@ -88,7 +88,7 @@ Make sure the web container is running before creating the test database before 
 the following command:
 
 ```bash
-docker-compose exec db psql -U postgres -c "CREATE DATABASE test_todo_db;"
+docker-compose exec db psql -U postgres -c "CREATE DATABASE test_library_db;"
 ```
 
 ### 2. Run the tests
