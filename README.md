@@ -8,11 +8,6 @@ and borrow/return actions. It supports sorting by title, author, publish date; p
 only authorized users can access the service.
 The application is fully Dockerized for easy setup and deployment.
 
-You can find the API documentation in the following
-link: [Link](https://drive.google.com/file/d/1euuTm4GmwqqPT9e3e7NGLQs_kAPKqdP_/view?usp=sharing)
-<br>
-Additionally, you can find the documentation in Swagger at the following URL: `http://localhost:8000/docs`
-
 ## Features
 
 1. **FastAPI with PostgreSQL Setup**
